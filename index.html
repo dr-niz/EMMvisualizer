@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EMM figure builder</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<style>
+:root{--bg:#f6f6f3;--fg:#1c1e21;--mut:#666b72;--line:#d4d6da;--card:#fff;--ac:#1d5c8c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181a;--fg:#e7e8ea;--mut:#9b9fa6;--line:#35383c;--card:#202326;--ac:#7db3e6}}
+:root[data-theme="dark"]{--bg:#16181a;--fg:#e7e8ea;--mut:#9b9fa6;--line:#35383c;--card:#202326;--ac:#7db3e6}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--fg);display:grid;grid-template-columns:350px 1fr}
+aside{overflow:auto;padding:16px;border-right:1px solid var(--line);height:100%}
+main{overflow:auto;padding:16px}
+#fig{background:#fff;border:1px solid var(--line);display:inline-block;max-width:100%;overflow:auto}
+h1{font-size:18px;margin:0 0 4px}h2{font-size:14px;margin:20px 0 8px}p{margin:4px 0;color:var(--mut);font-size:12px}
+label{display:flex;flex-direction:column;font-size:12px;color:var(--mut);gap:2px}
+label:has(input[type=checkbox]){flex-direction:row;align-items:center;gap:6px}
+#ctl{border:1px solid var(--line);border-radius:6px;padding:2px 8px}
+input,select,textarea,button{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:4px;padding:5px 7px;max-width:100%}
+button{cursor:pointer;background:var(--ac);color:var(--bg);border-color:var(--ac)}
+button.g{background:var(--card);color:var(--fg);border-color:var(--line)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.pn{border:1px solid var(--line);border-radius:6px;padding:8px;margin-bottom:8px}
+.hd{display:flex;gap:6px;align-items:center;margin-bottom:4px}.hd b{white-space:nowrap}.hd select{flex:1;min-width:0}details.grp{border-top:1px solid var(--line);padding:3px 0}.hd+details.grp,#ctl>details.grp:first-child{border-top:0}details.grp>summary{cursor:pointer;font-weight:600;font-size:12px;padding:4px 0;list-style:none}details.grp>summary::-webkit-details-marker{display:none}details.grp>summary::before{content:"▸ ";color:var(--mut)}details.grp[open]>summary::before{content:"▾ "}.gr{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px 0 8px}.gr .w{grid-column:1/-1}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+textarea{width:100%;height:150px;margin-bottom:6px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace}
+.empty{padding:40px;color:#666;font-family:system-ui}details.help{margin:10px 0;border:1px solid var(--line);border-radius:4px;padding:6px 10px}details.help summary{cursor:pointer;font-weight:600}details.help h3{font-size:13px;margin:12px 0 4px}details.help p,details.help li{font-size:12px;color:var(--fg);margin:3px 0}details.help ul,details.help ol{padding-left:18px;margin:4px 0}
+@media (max-width:800px){body{grid-template-columns:1fr;height:auto}aside{height:auto;border:0}}
+</style></head><body>
+<aside>
+<h1>EMM figure builder</h1>
+<p>Paste LaTeX tables of estimated marginal means (or add a jamovi PDF) to draw single or paneled figures.</p>
+<details class="help"><summary>How to use this tool</summary>
+<h3>Quick start</h3>
+<ol><li><b>Paste</b> LaTeX table code (or jamovi text) into the box and click Load tables, or add a file below it: .tex, .txt, or a jamovi PDF.</li><li><b>Pick a table</b> in Panel A, then choose what goes on the x-axis, what is colored, and what splits into sub-panels.</li><li>Click <b>Add panel</b> to put more tables in one figure, and set <b>Columns</b> to arrange them in a grid.</li><li><b>Style</b> the figure, then <b>export</b> as SVG or PNG.</li></ol>
+<h3>1. Load results</h3>
+<ul><li>Needs estimated marginal means tables: a heading like “Estimated Marginal Means - A ✻ B”, then rows of factor levels with Mean, SE, (df), Lower and Upper.</li><li>LaTeX tables take their factor order and columns from the header row, so a missing df column is fine. Paste several tables at once.</li><li>Reading a PDF needs an internet connection. If it fails, paste the text instead.</li></ul>
+<h3>2. Panel fields</h3>
+<ul><li><b>Table</b>: which set of means to plot.</li><li><b>Display</b>: points and lines, lines with a shaded CI band, or bars.</li><li><b>X axis / Color by / Split into panels by</b>: assign factors to roles. “Split” makes one sub-panel per level. With no split, any factor you haven’t assigned is held at its first level and named in the panel heading, so you always start with one panel.</li><li><b>X axis title, Y axis title</b>: custom text. Blank uses the factor name (x) or the Y label in Style (y).</li><li><b>X tick labels</b>: new names for the x levels, comma-separated, in the order shown.</li><li><b>Legend title, Legend labels</b>: rename the legend and its entries (labels in legend order).</li><li><b>Panel titles</b>: headings for split panels, in order. Use | between titles that contain commas.</li><li><b>Colors</b>: names or hex codes in legend order. Blank slots keep the palette color.</li><li><b>Line styles</b>: solid, dashed, dotted, dashdot or longdash, in legend order. Lines and bands only.</li><li>Type <b>[blank]</b> in any title or label field to hide it. For lists, [blank] alone hides all, or use it as one entry to hide just that one.</li></ul>
+<h3>3. Style (applies to the whole figure)</h3>
+<ul><li><b>Font, size, palette</b>: text and default group colors (colorblind-safe, muted or grayscale).</li><li><b>Error bars</b>: 95% CI or ± SE. It sets the bars, error bars and ribbon bands.</li><li><b>Line width, point size</b>: line and marker thickness.</li><li><b>Line shape</b>: sharp joins the means with straight segments. Smoothed draws a curve through the same means (and through the upper and lower CI bounds for ribbons). It is for appearance only and adds no information.</li><li><b>Columns</b>: panels per row. <b>Plot width/height</b>: size of each plot area in pixels.</li><li><b>Y min / Y max</b>: blank means automatic (bars always include 0). <b>Y label</b>: default y-axis title for all panels.</li><li><b>Shared y-axis</b>: same scale across panels so they compare directly. <b>Gridlines, Legends, Panel letters</b>: toggles. <b>Panel labels</b>: your own letters in order, e.g. B, C. A single letter such as B continues as B, C, D. [blank] hides them.</li><li><b>Legend position and layout</b>: outside (right, below, above) or inside a corner or edge, vertical or horizontal. <b>X label rotation</b>: angle for long tick labels.</li></ul>
+<h3>4. Export</h3>
+<ul><li><b>SVG</b> is editable in Illustrator or Inkscape. <b>PNG</b> is saved at 3× size.</li><li><b>Save settings</b> stores your styles and panels. After loading the same tables again, <b>Load settings</b> rebuilds the figure.</li></ul>
+<h3>Good to know</h3>
+<ul><li>The x-axis treats levels as evenly spaced categories.</li><li>Values are only as precise as the source table, and LaTeX tables are often rounded.</li><li>This tool plots estimated means and intervals only. It does not run statistics or draw significance brackets.</li><li>For a 3-way interaction, put one factor on the x-axis, one in Color by, and the third in Split into panels by, with Shared y-axis on.</li></ul>
+</details>
+<h2>1. Load results</h2>
+
+<textarea id="paste" placeholder="Paste LaTeX table code here (one table or several), or jamovi text" aria-label="LaTeX table code"></textarea><div class="row"><button id="parse">Load tables</button></div><p>Or add a file (.tex, .txt, or a jamovi .pdf):</p><input type="file" id="file" accept=".pdf,.txt,.tex">
+<p id="msg"></p>
+<h2>2. Panels</h2><p>One card per plot. Type [blank] in any label field to hide it.</p><div id="panels"></div><button id="add" class="g">Add panel</button>
+<h2>3. Figure style</h2><p>These apply to the whole figure.</p><div id="ctl"></div>
+<h2>4. Export</h2>
+<div class="row"><button id="svgb">SVG</button><button id="png">PNG (3×)</button><button id="sset" class="g">Save settings</button><label class="g" style="flex-direction:row"><span>Load settings</span><input type="file" id="lset" accept=".json"></label></div>
+</aside>
+<main><div id="fig"></div></main>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PAL={oi:['#0072B2','#D55E00','#009E73','#CC79A7','#E69F00','#56B4E9','#000000'],tab:['#4e79a7','#f28e2b','#e15759','#76b7b2','#59a14f','#edc948'],gray:['#000000','#7a7a7a','#bdbdbd','#444444','#9a9a9a']};
+const S={font:'Arial, Helvetica, sans-serif',fs:11,pal:'oi',err:'ci',lw:1.5,ps:4,cols:2,pw:260,ph:220,ymin:'',ymax:'',ylab:'',shared:true,grid:false,legend:true,letters:true,lgp:'right',lgo:'v',xrot:0,smooth:'p',plabs:''};
+const C=[['font','Font','sel',{'Arial, Helvetica, sans-serif':'Sans (Arial)','Georgia, serif':'Serif (Georgia)','"Times New Roman", serif':'Times'}],['fs','Font size (px)','num'],['pal','Palette','sel',{oi:'Colorblind-safe',tab:'Muted',gray:'Grayscale'}],['err','Error bars','sel',{ci:'95% CI',se:'± SE'}],['lw','Line width','num'],['ps','Point size','num'],['cols','Columns','num'],['pw','Plot width (px)','num'],['ph','Plot height (px)','num'],['ymin','Y min','txt'],['ymax','Y max','txt'],['ylab','Y label','txt'],['shared','Shared y-axis','chk'],['grid','Gridlines','chk'],['legend','Legends','chk'],['lgp','Legend position','sel',{right:'Right of plot',below:'Below plot',above:'Above plot','top-left':'Inside: top left','top-center':'Inside: top center','top-right':'Inside: top right','bottom-left':'Inside: bottom left','bottom-center':'Inside: bottom center','bottom-right':'Inside: bottom right'}],['lgo','Legend layout','sel',{v:'Vertical',h:'Horizontal'}],['xrot','X label rotation (°)','num'],['smooth','Line shape','sel',{p:'Sharp (straight segments)',s:'Smoothed (curved)'}],['letters','Panel letters','chk'],['plabs','Panel labels (e.g. B, C)','txt']];
+let T=[],P=[];
+const G={Text:['font','fs'],'Lines and marks':['pal','err','lw','ps','smooth'],Axes:['ylab','ymin','ymax','shared','grid','xrot'],Legend:['legend','lgp','lgo'],Layout:['cols','pw','ph','letters','plabs']};
+const fld=([k,l,t,o])=>`<label>${t=='chk'?'':l}`+(t=='sel'?`<select data-k="${k}">${Object.entries(o).map(([v,n])=>`<option value="${esc(v)}">${n}</option>`).join('')}</select>`:t=='chk'?`<input type="checkbox" data-k="${k}">${l}`:`<input data-k="${k}" type="${t=='num'?'number':'text'}" step="any">`)+`</label>`;
+$('#ctl').innerHTML=Object.entries(G).map(([n,ks])=>`<details class="grp"><summary>${n}</summary><div class="gr">${ks.map(k=>fld(C.find(c=>c[0]==k))).join('')}</div></details>`).join('');
+function sync(){document.querySelectorAll('[data-k]').forEach(e=>{const k=e.dataset.k;if(e.type=='checkbox')e.checked=S[k];else e.value=S[k];e.oninput=()=>{S[k]=e.type=='checkbox'?e.checked:e.type=='number'?(+e.value||0):e.value;draw()}})}
+sync();
+
+/* ---------- parsing ---------- */
+function parse(text){
+ const out=[];let cur=null,dv='',m;
+ for(const raw of text.split(/\r?\n/)){
+  let l=raw.replace(/\f/g,'').trim();
+  if(/\\end\{table\}/.test(l)){cur=null;continue}
+  l=l.replace(/\\caption\{(.*)\}\s*$/,'$1').replace(/\$?\\times\$?/g,'✻').replace(/\\_/g,'_').replace(/\$/g,'');
+  if(l.includes('&'))l=l.replace(/\\\\.*$/,'').split('&').map(s=>s.trim()).join('\t');
+  if(m=l.match(/lmer\s+(\S+)\s*~/))dv=m[1];
+  if(m=l.match(/Estimate[d]? Marginal Means\s*-\s*(.+)$/)){const f=m[1].split(/\s*[✻*×]\s*/).map(s=>s.trim());cur={dv,name:m[1].trim(),f,rows:[],key:dv+'|'+m[1].trim()};out.push(cur);continue}
+  if(/^Plot:|Results Plots/.test(l)){cur=null;continue}
+  if(!cur)continue;
+  {let tk=l.split(/\t|\s{2,}/).map(z=>z.trim()).filter(Boolean);if(!tk.includes('Mean'))tk=l.split(/\s+/);const k=tk.indexOf('Mean');if(k>0&&tk.includes('SE')){if(!cur.rows.length)cur.f=tk.slice(0,k);cur.c=tk.slice(k).filter(z=>/^(Mean|SE|df|Lower|Upper)$/.test(z));continue}}
+  const nc=(cur.c||['Mean','SE','df','Lower','Upper']).length;
+  m=l.match(new RegExp(`^(.+?)((?:\\s+-?\\d*\\.?\\d+){${nc}})$`));
+  if(!m)continue;
+  let lv=m[1].split(/\t|\s{2,}/).filter(Boolean);if(lv.length!=cur.f.length)lv=m[1].split(/\s+/);
+  if(lv.length!=cur.f.length)continue;
+  {const c=cur.c||['Mean','SE','df','Lower','Upper'],v=m[2].trim().split(/\s+/).map(Number),g=n=>v[c.indexOf(n)];cur.rows.push({l:lv,m:g('Mean'),se:g('SE'),lo:g('Lower'),hi:g('Upper')})}
+ }
+ return out.filter(t=>t.rows.length);
+}
+async function pdfText(file){
+ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+ const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer(),disableFontFace:true}).promise;let t='';
+ for(let p=1;p<=pdf.numPages;p++){
+  $('#msg').textContent=`Reading page ${p} of ${pdf.numPages}…`;
+  const it=(await(await pdf.getPage(p)).getTextContent()).items.filter(i=>i.str.trim()).sort((a,b)=>b.transform[5]-a.transform[5]||a.transform[4]-b.transform[4]);
+  let line=[],y=null;const flush=()=>{line.sort((a,b)=>a.transform[4]-b.transform[4]);let s='',e=null;line.forEach(i=>{if(e!==null)s+=i.transform[4]-e>6?'\t':' ';s+=i.str;e=i.transform[4]+i.width});t+=s+'\n';line=[]};
+  it.forEach(i=>{if(y!==null&&Math.abs(i.transform[5]-y)>3)flush();if(!line.length)y=i.transform[5];line.push(i)});
+  if(line.length)flush();t+='\f\n';
+ }
+ return t;
+}
+function ingest(text){
+ T=parse(text);
+ if(!T.length){$('#msg').textContent='No “Estimated Marginal Means” tables found. Check that the pasted text includes each table’s caption and its Mean, SE, Lower and Upper columns.';P=[];ui();draw();return}
+ P=[mk(T[T.length-1].key)];
+ $('#msg').textContent=`Found ${T.length} tables for ${[...new Set(T.map(t=>t.dv))].join(', ')||'the model'}.`;
+ ui();draw();
+}
+$('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{ingest(/\.pdf$/i.test(f.name)?await pdfText(f):await f.text())}catch(x){$('#msg').textContent='Could not read that file: '+x.message}};
+$('#parse').onclick=()=>ingest($('#paste').value);
+
+/* ---------- panels ---------- */
+const tb=k=>T.find(t=>t.key==k);
+const mk=k=>{const t=tb(k);return{t:k,type:'line',x:t.f[0],g:t.f[1]||'',f:''}};
+const L=i=>String.fromCharCode(65+i);
+function uiOld(){
+ const o=(a,s,none)=>(none?'<option value="">none</option>':'')+a.map(v=>`<option ${v===s?'selected':''}>${esc(v)}</option>`).join('');
+ $('#panels').innerHTML=P.map((p,i)=>{const t=tb(p.t);if(!t)return'';return`<div class="pn" data-i="${i}"><div class="w"><b>Panel ${L(i)}</b><button class="g" data-rm>Remove</button></div>
+ <label class="w" style="display:flex;flex-direction:column;align-items:stretch">Table<select data-f="t">${T.map(x=>`<option value="${esc(x.key)}" ${x.key==p.t?'selected':''}>${esc(x.dv?x.dv+': ':'')}${esc(x.name)}</option>`).join('')}</select></label>
+ <label>Display<select data-f="type"><option value="line" ${p.type=='line'?'selected':''}>Points and lines</option><option value="ribbon" ${p.type=='ribbon'?'selected':''}>Lines with shaded CI band</option><option value="bar" ${p.type=='bar'?'selected':''}>Bars</option></select></label>
+ <label>X axis<select data-f="x">${o(t.f,p.x)}</select></label>
+ <label>Color by<select data-f="g">${o(t.f,p.g,1)}</select></label>
+ <label>Split into panels by<select data-f="f">${o(t.f,p.f,1)}</select></label><label>X axis title<input data-f="xl" value="${esc(p.xl||'')}" placeholder="${esc(p.x)}"></label><label>Y axis title<input data-f="yl" value="${esc(p.yl||'')}" placeholder="same as style panel"></label><label style="grid-column:1/-1">X tick labels, comma-separated, in order<input data-f="xt" value="${esc(p.xt||'')}" placeholder="blank = as in the table"></label><label>Legend title<input data-f="gt" value="${esc(p.gt||'')}" placeholder="${esc(p.g)}"></label><label>Legend labels, comma-separated<input data-f="gl" value="${esc(p.gl||'')}" placeholder="in order"></label><label style="grid-column:1/-1">Panel titles, in order (use | if a title has a comma)<input data-f="pt" value="${esc(p.pt||'')}" placeholder="blank = factor: level"></label><label>Colors, in legend order<input data-f="pc" value="${esc(p.pc||'')}" placeholder="#0072B2, tomato"></label><label>Line styles, in legend order<input data-f="ls" value="${esc(p.ls||'')}" placeholder="solid, dashed, dotted"></label></div>`}).join('');
+}
+$('#panels').onchange=e=>{const f=e.target.dataset.f;if(!f)return;const i=+e.target.closest('.pn').dataset.i;P[i][f]=e.target.value;if(f=='t')P[i]={...mk(e.target.value),type:P[i].type};ui();draw()};
+$('#panels').onclick=e=>{if(e.target.dataset.rm!=null){P.splice(+e.target.closest('.pn').dataset.i,1);ui();draw()}};
+$('#add').onclick=()=>{if(T.length){P.push(mk(P.length?P[P.length-1].t:T[T.length-1].key));ui();draw()}};
+
+/* ---------- drawing ---------- */
+const bk=z=>/^\[blank\]$/i.test((z||'').trim());const fmt=v=>String(+v.toFixed(4));
+function ticks(lo,hi){const r=hi-lo,p=10**Math.floor(Math.log10(r/5)),st=[1,2,2.5,5,10].map(k=>k*p).find(s=>s>=r/5),a=[];for(let v=Math.ceil(lo/st-1e-9)*st;v<=hi+1e-9;v+=st)a.push(v);return a}
+const OP={};
+function ui(){
+ const o=(a,s,none)=>(none?'<option value="">none</option>':'')+a.map(v=>`<option ${v===s?'selected':''}>${esc(v)}</option>`).join('');
+ const fi=(p,f,l,ph,w)=>`<label${w?' class="w"':''}>${l}<input data-f="${f}" value="${esc(p[f]||'')}" placeholder="${esc(ph)}"></label>`;
+ const gp=(i,k,ti,body,def)=>`<details class="grp" data-g="${i}${k}" ${(OP[i+k]===undefined?def:OP[i+k])?'open':''}><summary>${ti}</summary><div class="gr">${body}</div></details>`;
+ $('#panels').innerHTML=P.map((p,i)=>{const t=tb(p.t);if(!t)return'';const n=a=>a.filter(f=>p[f]).length,c1=n(['xl','yl','xt','gt','gl','pt']),c2=n(['pc','ls']),sel=(f,l,a,none)=>`<label>${l}<select data-f="${f}">${o(a,p[f],none)}</select></label>`;
+ return`<div class="pn" data-i="${i}"><div class="hd"><b>Panel ${L(i)}</b><select data-f="t" aria-label="Table">${T.map(x=>`<option value="${esc(x.key)}" ${x.key==p.t?'selected':''}>${esc(x.dv?x.dv+': ':'')}${esc(x.name)}</option>`).join('')}</select><button class="g" data-rm title="Remove panel" aria-label="Remove panel">✕</button></div>`
+ +gp(i,'d','Data',`<label>Display<select data-f="type"><option value="line" ${p.type=='line'?'selected':''}>Points and lines</option><option value="ribbon" ${p.type=='ribbon'?'selected':''}>Lines with shaded CI band</option><option value="bar" ${p.type=='bar'?'selected':''}>Bars</option></select></label>`+sel('x','X axis',t.f)+sel('g','Color by',t.f,1)+sel('f','Split into panels by',t.f,1),true)
+ +gp(i,'l',`Labels${c1?' · '+c1+' set':''}`,fi(p,'xl','X axis title',p.x)+fi(p,'yl','Y axis title','same as figure Y label')+fi(p,'xt','X tick labels, comma-separated, in order','blank = as in the table',1)+fi(p,'gt','Legend title',p.g)+fi(p,'gl','Legend labels, comma-separated','in order')+fi(p,'pt','Panel titles, in order (use | if a title has a comma)','blank = factor: level',1),false)
+ +gp(i,'c',`Colors and lines${c2?' · '+c2+' set':''}`,fi(p,'pc','Colors, in legend order','#0072B2, tomato')+fi(p,'ls','Line styles, in legend order','solid, dashed, dotted'),false)+'</div>'}).join('');
+}
+$('#panels').addEventListener('toggle',e=>{if(e.target.dataset.g)OP[e.target.dataset.g]=e.target.open},true);
+function mono(P,rev){const n=P.length,d=[],m=[],seg=[];if(n<2)return'';for(let i=0;i<n-1;i++)d.push((P[i+1][1]-P[i][1])/(P[i+1][0]-P[i][0]));m[0]=d[0];m[n-1]=d[n-2];for(let i=1;i<n-1;i++)m[i]=d[i-1]*d[i]<=0?0:(d[i-1]+d[i])/2;for(let i=0;i<n-1;i++){if(d[i]==0)m[i]=m[i+1]=0;else{const a=m[i]/d[i],b=m[i+1]/d[i],h=a*a+b*b;if(h>9){const t=3/Math.sqrt(h);m[i]=t*a*d[i];m[i+1]=t*b*d[i]}}}for(let i=0;i<n-1;i++){const w=(P[i+1][0]-P[i][0])/3;seg.push([P[i][0]+w,P[i][1]+m[i]*w,P[i+1][0]-w,P[i+1][1]-m[i+1]*w])}return rev?'L'+P[n-1].join(' ')+seg.map((c,i)=>i).reverse().map(i=>`C${seg[i][2]} ${seg[i][3]} ${seg[i][0]} ${seg[i][1]} ${P[i][0]} ${P[i][1]}`).join(''):'M'+P[0].join(' ')+seg.map((c,i)=>`C${c[0]} ${c[1]} ${c[2]} ${c[3]} ${P[i+1][0]} ${P[i+1][1]}`).join('')}
+function draw(){
+ const fig=$('#fig'),ps=P.filter(p=>tb(p.t));
+ if(!ps.length){fig.innerHTML='<div class="empty">Paste LaTeX tables or add a file to see the estimated marginal means here. Open “How to use this tool” in the left panel for a walkthrough.</div>';return}
+ const U=ps.flatMap(p=>{const t=tb(p.t),fi=t.f.indexOf(p.f),fix=t.f.map((n,i)=>[i,n]).filter(([i,n])=>n!=p.x&&n!=p.g&&n!=p.f).map(([i])=>[i,t.rows[0].l[i]]);return fi<0?[{p,t,lv:null,i:0,fix}]:[...new Set(t.rows.map(r=>r.l[fi]))].map((lv,i)=>({p,t,lv,i,fix}))});
+ const er=r=>S.err=='se'?[r.m-r.se,r.m+r.se]:[r.lo,r.hi];
+ const rows=u=>u.t.rows.filter(r=>(u.lv==null||r.l[u.t.f.indexOf(u.p.f)]==u.lv)&&u.fix.every(([i,v])=>r.l[i]==v));
+ const rg=us=>{const a=us.flatMap(u=>rows(u).flatMap(er)),b=us.some(u=>u.p.type=='bar');let lo=Math.min(...a),hi=Math.max(...a);if(b)lo=Math.min(lo,0);const d=(hi-lo)||1;if(!(b&&lo==0))lo-=.06*d;hi+=.06*d;if(S.ymin!==''&&!isNaN(+S.ymin))lo=+S.ymin;if(S.ymax!==''&&!isNaN(+S.ymax))hi=+S.ymax;return[lo,hi]};
+ const all=S.shared?rg(U):null;
+ const pl=S.plabs.trim()?S.plabs.split(',').map(z=>z.trim()):[],lbl=k=>bk(S.plabs)||bk(pl[k])?'':pl[k]?pl[k]:(k>=pl.length&&pl.length&&/^[A-Za-z]$/.test(pl[pl.length-1])?String.fromCharCode(pl[pl.length-1].charCodeAt(0)+k-pl.length+1):L(k));const lgd=u=>{const{p,t}=u,gi=p.g?t.f.indexOf(p.g):-1;if(gi<0)return null;const g=[...new Set(rows(u).map(r=>r.l[gi]))],tw=z=>z.length*S.fs*.6+4,hz=S.lgo=='h',gl=(p.gl||'').split(',').map(z=>z.trim()),lab=g.map((x,i)=>bk(p.gl)||bk(gl[i])?'':(gl[i]||x)),ttl=bk(p.gt)?'':(p.gt||p.g),it=lab.map(x=>15+tw(x)+(hz?12:0)),tt=ttl?tw(ttl):0;return{g,lab,ttl,hz,tt,it,w:hz?tt+(ttl?8:0)+it.reduce((a,b)=>a+b,0):Math.max(tt,...it),h:hz?S.fs+6:(g.length+(ttl?1:0))*(S.fs+8)}};const LG=U.map(lgd),mw=Math.max(0,...LG.map(l=>l?l.w:0)),mh=Math.max(0,...LG.map(l=>l?l.h:0)),pos=S.lgp,on=S.legend&&LG.some(Boolean),xo=S.xrot?Math.round(S.fs*4*Math.sin(S.xrot*Math.PI/180)):0;const cols=Math.min(Math.max(1,S.cols|0),U.length),mL=58,mR=16+(on&&pos=='right'?mw+16:0),mT=30+(on&&pos=='above'?mh+8:0),mB=50+xo+(on&&pos=='below'?mh+8:0),cw=mL+S.pw+mR,ch=mT+S.ph+mB,W=cols*cw,H=Math.ceil(U.length/cols)*ch,pal=PAL[S.pal];
+ const body=U.map((u,k)=>{
+  const{p,t}=u,[lo,hi]=all||rg([u]),ox=(k%cols)*cw,oy=Math.floor(k/cols)*ch,R=rows(u),xi=t.f.indexOf(p.x),gi=p.g?t.f.indexOf(p.g):-1;
+  if(xi<0||hi<=lo)return'';
+  const un=i=>[...new Set(R.map(r=>r.l[i]))],xs=un(xi),gs=gi>=0?un(gi):[''],bar=p.type=='bar',rb=p.type=='ribbon',bw=S.pw/xs.length,gw=bar?bw*.8/gs.length:Math.min(bw*.6/gs.length,14);
+  const X=i=>ox+mL+(i+.5)*bw,Y=v=>oy+mT+S.ph-(v-lo)/(hi-lo)*S.ph,cl=(p.pc||'').split(',').map(z=>z.trim()).map(z=>/^([0-9a-f]{3}|[0-9a-f]{6})$/i.test(z)?'#'+z:z),ls=(p.ls||'').split(',').map(z=>z.trim().toLowerCase()),col=j=>cl[j]||pal[j%pal.length],da=j=>({dashed:'7 4',dotted:'1 4',dashdot:'8 3 1 3',longdash:'12 5'})[ls[j]]||'',base=Y(Math.max(lo,0)),x0=ox+mL,y1=oy+mT+S.ph;
+  let s=`<g font-family="${esc(S.font)}" font-size="${S.fs}" fill="#111">`;
+  ticks(lo,hi).forEach(v=>{s+=(S.grid?`<line x1="${x0}" x2="${x0+S.pw}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e3e3e3"/>`:'')+`<line x1="${x0-4}" x2="${x0}" y1="${Y(v)}" y2="${Y(v)}" stroke="#111"/><text x="${x0-7}" y="${Y(v)+S.fs*.35}" text-anchor="end">${fmt(v)}</text>`});
+  gs.forEach((g,j)=>{
+   const dx=rb?0:(j-(gs.length-1)/2)*gw,pts=xs.map((x,i)=>{const r=R.find(r=>r.l[xi]==x&&(gi<0||r.l[gi]==g));return r&&{i,r}}).filter(Boolean),c=bar&&gs.length==1&&S.pal=='gray'?'#999':col(j);
+   if(rb&&pts.length>1){const up=pts.map(q=>[X(q.i),Y(er(q.r)[1])]),lr=pts.map(q=>[X(q.i),Y(er(q.r)[0])]);s+=S.smooth=='s'?`<path d="${mono(up)}${mono(lr,1)}Z" fill="${c}" fill-opacity=".2"/>`:`<polygon points="${up.concat(lr.slice().reverse()).map(q=>q.join(',')).join(' ')}" fill="${c}" fill-opacity=".2"/>`}
+   if(!bar&&pts.length>1)s+=`<${S.smooth=='s'?'path':'polyline'} fill="none" stroke="${c}" stroke-width="${S.lw}" stroke-dasharray="${da(j)}" stroke-linecap="${ls[j]=='dotted'?'round':'butt'}" ${S.smooth=='s'?`d="${mono(pts.map(q=>[X(q.i)+dx,Y(q.r.m)]))}"`:`points="${pts.map(q=>X(q.i)+dx+','+Y(q.r.m)).join(' ')}"`}/>`;
+   pts.forEach(({i,r})=>{const cx=X(i)+dx,[a,b]=er(r),ec=bar?'#111':c;
+    if(bar)s+=`<rect x="${cx-gw*.45}" width="${gw*.9}" y="${Math.min(Y(r.m),base)}" height="${Math.abs(Y(r.m)-base)}" fill="${c}"/>`;
+    if(!rb)s+=`<path d="M${cx} ${Y(a)}V${Y(b)}M${cx-3} ${Y(a)}H${cx+3}M${cx-3} ${Y(b)}H${cx+3}" stroke="${ec}" stroke-width="${S.lw}" fill="none"/>`;
+    if(!bar&&!rb)s+=`<circle cx="${cx}" cy="${Y(r.m)}" r="${S.ps}" fill="${c}" stroke="#fff" stroke-width="1"/>`});
+  });
+  s+=`<path d="M${x0} ${oy+mT}V${y1}H${x0+S.pw}" stroke="#111" fill="none"/>`;
+  const xt=(p.xt||'').split(',').map(z=>z.trim());xs.forEach((x,i)=>{const lb=bk(p.xt)||bk(xt[i])?'':esc(xt[i]||x);s+=S.xrot?`<text transform="translate(${X(i)} ${y1+14}) rotate(${-S.xrot})" text-anchor="end">${lb}</text>`:`<text x="${X(i)}" y="${y1+16}" text-anchor="middle">${lb}</text>`});
+  if(!bk(p.xl))s+=`<text x="${x0+S.pw/2}" y="${y1+36+xo}" text-anchor="middle">${esc(p.xl||p.x)}</text>`;
+  if(!(bk(p.yl)||(!p.yl&&bk(S.ylab))))s+=`<text transform="translate(${ox+14} ${oy+mT+S.ph/2}) rotate(-90)" text-anchor="middle">${esc(p.yl||S.ylab||t.dv||'Estimated marginal mean')}</text>`;
+  {const pj=p.pt||'',pt=pj.split(pj.includes('|')?'|':',').map(z=>z.trim()),ti=bk(p.pt)||bk(pt[u.i])?'':(pt[u.i]||(u.lv!=null?p.f+': '+u.lv:u.fix.map(([i,v])=>t.f[i]+': '+v).join(', ')));if(ti)s+=`<text x="${x0+S.pw/2}" y="${oy+18}" text-anchor="middle" font-weight="600">${esc(ti)}</text>`}
+  if(S.letters)s+=`<text x="${ox+4}" y="${oy+16}" font-size="${S.fs*1.4}" font-weight="700">${esc(lbl(k))}</text>`;
+  {const l=S.legend&&LG[k];if(l){let lx,ly;const q=pos.split('-');if(pos=='right'){lx=x0+S.pw+14;ly=oy+mT}else if(pos=='below'){lx=x0+(S.pw-l.w)/2;ly=y1+46+xo}else if(pos=='above'){lx=x0+(S.pw-l.w)/2;ly=oy+30}else{lx=q[1]=='left'?x0+10:q[1]=='right'?x0+S.pw-l.w-10:x0+(S.pw-l.w)/2;ly=q[0]=='top'?oy+mT+8:oy+mT+S.ph-l.h-8}if(q.length>1)s+=`<rect x="${lx-5}" y="${ly-4}" width="${l.w+10}" height="${l.h+8}" fill="#fff" fill-opacity=".85"/>`;if(l.ttl)s+=`<text x="${lx}" y="${ly+S.fs}" font-weight="600">${esc(l.ttl)}</text>`;let cx=lx+l.tt+(l.ttl?8:0);l.g.forEach((g,j)=>{const bx=l.hz?cx:lx,by=ly+S.fs+(l.hz?0:(j+(l.ttl?1:0))*(S.fs+8));s+=(p.type=='bar'?`<rect x="${bx}" y="${by-9}" width="10" height="10" fill="${col(j)}"/>`:`<line x1="${bx-1}" x2="${bx+12}" y1="${by-4}" y2="${by-4}" stroke="${col(j)}" stroke-width="${S.lw}" stroke-dasharray="${da(j)}" stroke-linecap="${ls[j]=='dotted'?'round':'butt'}"/>`+(p.type=='line'?`<circle cx="${bx+5.5}" cy="${by-4}" r="${Math.min(S.ps,4)}" fill="${col(j)}"/>`:''))+`<text x="${bx+15}" y="${by}">${esc(l.lab[j])}</text>`;cx+=l.it[j]})}}
+  return s+'</g>';
+ }).join('');
+ fig.innerHTML=`<svg id="svg" xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="max-width:100%;height:auto;display:block"><rect width="${W}" height="${H}" fill="#fff"/>${body}</svg>`;
+}
+
+/* ---------- export ---------- */
+async function save(filename,data,type){
+ let d=null;try{d=window.claude&&await claude.use('downloads')}catch(e){}
+ if(d){try{await d.save({filename,data})}catch(e){if(e.code!='declined')$('#msg').textContent='Save failed: '+(e.message||e.code)}return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(data instanceof Blob?data:new Blob([data],{type}));a.download=filename;a.click();
+}
+const svgStr=()=>new XMLSerializer().serializeToString($('#svg'));
+$('#svgb').onclick=()=>$('#svg')&&save('figure.svg',svgStr(),'image/svg+xml');
+$('#png').onclick=()=>{const svg=$('#svg');if(!svg)return;const img=new Image(),sc=3,w=+svg.getAttribute('width'),h=+svg.getAttribute('height');
+ img.onload=()=>{const c=document.createElement('canvas');c.width=w*sc;c.height=h*sc;const x=c.getContext('2d');x.scale(sc,sc);x.drawImage(img,0,0);c.toBlob(b=>save('figure.png',b))};
+ img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr())};
+$('#sset').onclick=()=>save('figure-settings.json',JSON.stringify({S,P},null,1),'application/json');
+$('#lset').onchange=async e=>{try{const j=JSON.parse(await e.target.files[0].text());Object.assign(S,j.S);P=(j.P||[]).filter(p=>tb(p.t));sync();ui();draw()}catch(x){$('#msg').textContent='Could not read those settings.'}};
+draw();
+</script></body></html>
